@@ -1,0 +1,40 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <span class="eyebrow">Operacion de servicios</span>
+      <h1 class="page__title">Panel de avisos operativos</h1>
+      <p class="page__subtitle">
+        Espacio institucional para mostrar incidencias recientes y preparar el
+        registro de fallas por servicio sin convertir la experiencia en un chat.
+      </p>
+    </div>
+  </header>
+
+  <div class="grid grid--2">
+    <section class="surface-card">
+      <app-aviso-operativo-list
+        [avisos]="avisos"
+        emptyTitle="Sin avisos reportados todavia"
+        emptyDescription="La siguiente fase conectara el listado real, el formulario de reporte y el cambio de estado."
+      ></app-aviso-operativo-list>
+    </section>
+
+    <section class="surface-card surface-card--muted">
+      <h2 class="section-title">Base lista para continuar</h2>
+      <div class="stat-list">
+        <div class="stat-item">
+          <span>Endpoint</span>
+          <strong>/api/v1/avisos-operativos</strong>
+        </div>
+        <div class="stat-item">
+          <span>Acciones</span>
+          <strong>Listar, registrar y actualizar estado</strong>
+        </div>
+        <div class="stat-item">
+          <span>UX objetivo</span>
+          <strong>Panel claro, no invasivo y operativo</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class="toast-stack" *ngIf="messages$ | async as messages">
+  <article
+    *ngFor="let message of messages"
+    class="toast-stack__item"
+    [class.toast-stack__item--success]="message.tone === 'success'"
+    [class.toast-stack__item--warning]="message.tone === 'warning'"
+    [class.toast-stack__item--danger]="message.tone === 'danger'"
+    [class.toast-stack__item--info]="message.tone === 'info'"
+  >
+    <div class="toast-stack__copy">
+      <strong>{{ message.title }}</strong>
+      <p *ngIf="message.description">{{ message.description }}</p>
+    </div>
+
+    <button type="button" class="toast-stack__close" (click)="dismiss(message.id)">
+      Cerrar
+    </button>
+  </article>
+</div>

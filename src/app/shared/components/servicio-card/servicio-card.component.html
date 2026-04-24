@@ -1,0 +1,47 @@
+<article class="servicio-card">
+  <ng-container *ngIf="servicio; else servicioEmpty">
+    <div class="servicio-card__head">
+      <div class="servicio-card__logo">
+        <img
+          *ngIf="servicio.logoUrl"
+          [src]="servicio.logoUrl || ''"
+          alt="Logo del servicio"
+        />
+        <span *ngIf="!servicio.logoUrl">
+          {{ (servicio.nombre || '').slice(0, 2).toUpperCase() || 'SV' }}
+        </span>
+      </div>
+      <span class="eyebrow">{{ servicio.canal || 'Atencion presencial' }}</span>
+    </div>
+
+    <h3>{{ servicio.nombre }}</h3>
+    <p>
+      {{ servicio.descripcion || 'Servicio operativo listo para ser seleccionado.' }}
+    </p>
+
+    <div class="servicio-card__footer">
+      <span>{{ servicio.disponibilidad || 'Disponibilidad por confirmar' }}</span>
+      <div class="actions-row">
+        <button
+          type="button"
+          class="button button--secondary"
+          (click)="selected.emit()"
+        >
+          {{ actionLabel }}
+        </button>
+        <button
+          type="button"
+          class="button button--ghost"
+          (click)="secondaryAction.emit()"
+        >
+          {{ secondaryLabel }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #servicioEmpty>
+    <h3>Sin servicio seleccionado</h3>
+    <p>El componente queda listo para mostrar catalogos y reportes operativos.</p>
+  </ng-template>
+</article>

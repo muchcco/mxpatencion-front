@@ -1,0 +1,89 @@
+<div class="page session-bootstrap" *ngIf="session$ | async as session">
+  <section class="surface-card surface-card--accent">
+    <span class="eyebrow">
+      {{ hasSsoPayload() ? 'Auth callback' : 'Sesion institucional' }}
+    </span>
+    <h1 class="page__title">{{ resolveTitle(session.status) }}</h1>
+    <p class="page__subtitle">{{ resolveSubtitle(session.status) }}</p>
+  </section>
+
+  <div class="grid grid--2">
+    <section class="surface-card">
+      <div class="session-bootstrap__state">
+        <app-status-badge
+          [label]="session.status"
+          [tone]="resolveTone(session.status)"
+        ></app-status-badge>
+        <p class="section-copy">
+          {{ session.message || 'Preparando el contexto institucional del asesor.' }}
+        </p>
+      </div>
+
+      <app-loading-skeleton
+        *ngIf="!sessionExpired && (session.status === 'idle' || session.status === 'loading')"
+        [lines]="4"
+      ></app-loading-skeleton>
+
+      <section class="session-bootstrap__expired" *ngIf="sessionExpired">
+        <strong>Su sesion ha caducado.</strong>
+        <p>
+          Redirigiendo al login en <strong>{{ countdownSeconds }}</strong>
+          segundo(s).
+        </p>
+        <button type="button" class="button" (click)="goToLoginNow()">
+          Ir al login ahora
+        </button>
+      </section>
+
+      <app-empty-state
+        *ngIf="!sessionExpired && (session.status === 'error' || session.status === 'anonymous')"
+        title="No se pudo establecer la sesion"
+        [description]="session.message || 'Confirma que el backend Laravel este disponible y reintenta.'"
+        [actionLabel]="hasSsoPayload() ? 'Reintentar callback' : 'Reintentar verificacion'"
+        (action)="retry()"
+      ></app-empty-state>
+
+      <div
+        class="session-bootstrap__success"
+        *ngIf="session.status === 'authenticated'"
+      >
+        <p class="section-copy">
+          Sesion validada. Redirigiendo al flujo principal del sistema.
+        </p>
+        <button type="button" class="button" (click)="retry()">
+          Refrescar contexto
+        </button>
+      </div>
+    </section>
+
+    <section class="surface-card surface-card--muted">
+      <h2 class="section-title">Criterios de la base implementada</h2>
+      <div class="stat-list">
+        <div class="stat-item">
+          <span>Modo</span>
+          <strong>{{ hasSsoPayload() ? 'SSO callback' : 'Sesion existente' }}</strong>
+        </div>
+        <div class="stat-item">
+          <span>Seguridad</span>
+          <strong>Cookies y sesion via backend</strong>
+        </div>
+        <div class="stat-item">
+          <span>Interceptors</span>
+          <strong>Credentials, loading y errores</strong>
+        </div>
+        <div class="stat-item">
+          <span>Objetivo</span>
+          <strong>Arranque rapido y sin autenticacion ficticia</strong>
+        </div>
+        <div class="stat-item">
+          <span>Destino</span>
+          <strong>{{ redirectTo }}</strong>
+        </div>
+        <div class="stat-item" *ngIf="sessionExpired">
+          <span>Siguiente accion</span>
+          <strong>Redireccion a login en {{ countdownSeconds }}s</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

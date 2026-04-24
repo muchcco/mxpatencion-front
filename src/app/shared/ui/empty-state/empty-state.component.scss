@@ -1,0 +1,36 @@
+.empty-state {
+  display: grid;
+  justify-items: flex-start;
+  gap: 1rem;
+  padding: 1.1rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(244, 249, 254, 0.96), rgba(255, 255, 255, 0.94));
+}
+
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--color-brand-100);
+  color: var(--color-brand-800);
+  font-weight: 800;
+}
+
+.empty-state__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.empty-state__description {
+  margin: 0;
+  color: var(--color-text-700);
+  line-height: 1.55;
+}
+
+.empty-state--compact {
+  gap: 0.75rem;
+  padding: 1rem;
+}

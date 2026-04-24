@@ -1,0 +1,20 @@
+<ol class="stepper-atencion">
+  <li
+    *ngFor="let step of steps; let index = index; trackBy: trackByIndex"
+    class="stepper-atencion__item"
+    [class.stepper-atencion__item--active]="index === currentIndex"
+    [class.stepper-atencion__item--done]="index < currentIndex"
+  >
+    <div class="stepper-atencion__indicator">
+      <span class="stepper-atencion__index">{{ index + 1 }}</span>
+      <span
+        *ngIf="index < steps.length - 1"
+        class="stepper-atencion__connector"
+      ></span>
+    </div>
+    <div class="stepper-atencion__copy">
+      <strong>{{ step.label }}</strong>
+      <span *ngIf="step.hint">{{ step.hint }}</span>
+    </div>
+  </li>
+</ol>

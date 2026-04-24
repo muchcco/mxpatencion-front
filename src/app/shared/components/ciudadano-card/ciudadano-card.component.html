@@ -1,0 +1,79 @@
+<article class="ciudadano-card" *ngIf="ciudadano; else ciudadanoEmpty">
+  <div class="ciudadano-card__band">
+    <div class="ciudadano-card__band-copy">
+      <strong>{{ resolveHeadline() }}</strong>
+    </div>
+    <app-status-badge
+      *ngIf="ciudadano.fuente"
+      [label]="ciudadano.fuente"
+      [tone]="resolveFuenteTone()"
+    ></app-status-badge>
+  </div>
+
+  <div class="ciudadano-card__main">
+    <div class="ciudadano-card__avatar">
+      <img
+        *ngIf="ciudadano.fotoUrl; else ciudadanoAvatarInitials"
+        [src]="ciudadano.fotoUrl || ''"
+        alt="Foto del ciudadano"
+      />
+      <ng-template #ciudadanoAvatarInitials>
+        {{ resolveInitials() }}
+      </ng-template>
+    </div>
+
+    <div class="ciudadano-card__content">
+      <div class="ciudadano-card__header">
+        <h3>{{ resolveFullName() }}</h3>
+        <p class="ciudadano-card__document-line">
+          Tipo y N de documento:
+          <strong>
+            {{ ciudadano.tipoDocumento || 'Documento' }}
+            {{ ciudadano.documento || 'Sin dato' }}
+          </strong>
+        </p>
+        <p class="ciudadano-card__document-line">
+          Sexo:
+          <strong>{{ ciudadano.sexo || 'No registrado' }}</strong>
+        </p>
+      </div>
+
+      <div class="actions-row ciudadano-card__actions" *ngIf="showActions">
+        <button
+          type="button"
+          class="button button--secondary"
+          (click)="secondaryAction.emit()"
+        >
+          {{ secondaryLabel }}
+        </button>
+        <button
+          type="button"
+          class="button"
+          [disabled]="primaryDisabled"
+          (click)="primaryAction.emit()"
+        >
+          {{ primaryLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ciudadano-card__origin" *ngIf="originLabel">
+    <span class="ciudadano-card__origin-icon" aria-hidden="true">i</span>
+    <div class="ciudadano-card__origin-copy">
+      <strong>{{ originLabel }}</strong>
+      <span *ngIf="originDetail">{{ originDetail }}</span>
+    </div>
+  </div>
+</article>
+
+<ng-template #ciudadanoEmpty>
+  <article class="ciudadano-card ciudadano-card--empty">
+    <span class="eyebrow">Resultado</span>
+    <h3>Sin ciudadano identificado</h3>
+    <p>
+      Busca al ciudadano en la base local. Si no existe, el sistema continuara
+      con PIDE y luego habilitara el registro manual si hace falta.
+    </p>
+  </article>
+</ng-template>

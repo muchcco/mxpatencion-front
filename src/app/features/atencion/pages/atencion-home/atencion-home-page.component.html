@@ -1,0 +1,228 @@
+<div class="page atencion-home">
+  <header class="page__header">
+    <div>
+      <h1 class="page__title">Atencion de ciudadano</h1>
+      <p class="page__subtitle">
+        Busca al ciudadano para iniciar una atencion.
+      </p>
+    </div>
+  </header>
+
+  <ng-container *ngIf="state$ | async as state">
+    <app-stepper-atencion
+      [steps]="steps"
+      [currentIndex]="resolveCurrentStep(state.status)"
+    ></app-stepper-atencion>
+
+    <div class="atencion-home__layout">
+      <section class="surface-card atencion-home__search">
+        <app-loading-skeleton
+          *ngIf="tiposDocumentoLoading"
+          [lines]="5"
+        ></app-loading-skeleton>
+
+        <div
+          *ngIf="!tiposDocumentoLoading && tiposDocumentoError"
+          class="atencion-home__notice atencion-home__notice--warning"
+        >
+          <div class="atencion-home__notice-copy">
+            <strong>No se pudo cargar el catalogo</strong>
+            <p>{{ tiposDocumentoError }}</p>
+          </div>
+          <button
+            type="button"
+            class="button button--secondary"
+            (click)="retryTiposDocumento()"
+          >
+            Reintentar
+          </button>
+        </div>
+
+        <app-ciudadano-search-form
+          *ngIf="!tiposDocumentoLoading && !tiposDocumentoError"
+          [tiposDocumento]="tiposDocumento"
+          [status]="state.status"
+          [activeStage]="resolveActiveStage(state)"
+          (searchSubmitted)="onSearchSubmitted($event)"
+          (clearRequested)="onClearRequested()"
+        ></app-ciudadano-search-form>
+      </section>
+
+      <section class="surface-card atencion-home__result">
+        <ng-container *ngIf="shouldShowLookupProgress(state)">
+          <div class="atencion-home__notice atencion-home__notice--info">
+            <div class="atencion-home__notice-copy">
+              <strong>{{ resolveNoticeTitle(state) }}</strong>
+              <p>{{ state.message }}</p>
+            </div>
+            <app-loading-skeleton [lines]="2"></app-loading-skeleton>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="shouldShowError(state)">
+          <div class="atencion-home__notice atencion-home__notice--danger">
+            <div class="atencion-home__notice-copy">
+              <strong>{{ resolveNoticeTitle(state) }}</strong>
+              <p>{{ state.message }}</p>
+            </div>
+            <button
+              type="button"
+              class="button button--secondary"
+              (click)="onClearRequested()"
+            >
+              Limpiar busqueda
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="shouldShowManualForm(state)">
+          <div class="atencion-home__notice atencion-home__notice--warning">
+            <div class="atencion-home__notice-copy">
+              <strong>No se pudo obtener informacion desde PIDE</strong>
+              <p>
+                {{
+                  state.message ||
+                    'Complete el registro manual para continuar con la atencion.'
+                }}
+              </p>
+            </div>
+          </div>
+
+          <form
+            class="atencion-home__manual-form"
+            [formGroup]="manualForm"
+            (ngSubmit)="onSaveManual()"
+          >
+            <div class="atencion-home__manual-header">
+              <h3>Registro manual</h3>
+              <p>Completa los datos minimos para continuar con la atencion.</p>
+            </div>
+
+            <div class="atencion-home__manual-grid">
+              <label class="atencion-home__field atencion-home__field--full">
+                <span>Nombres</span>
+                <input type="text" formControlName="nombres" />
+                <small
+                  *ngIf="
+                    manualForm.controls.nombres.touched &&
+                    manualForm.controls.nombres.invalid
+                  "
+                >
+                  Ingresa los nombres del ciudadano.
+                </small>
+              </label>
+
+              <label class="atencion-home__field">
+                <span>Apellido paterno</span>
+                <input type="text" formControlName="apellidoPaterno" />
+                <small
+                  *ngIf="
+                    manualForm.controls.apellidoPaterno.touched &&
+                    manualForm.controls.apellidoPaterno.invalid
+                  "
+                >
+                  Ingresa el apellido paterno.
+                </small>
+              </label>
+
+              <label class="atencion-home__field">
+                <span>Apellido materno</span>
+                <input type="text" formControlName="apellidoMaterno" />
+                <small
+                  *ngIf="
+                    manualForm.controls.apellidoMaterno.touched &&
+                    manualForm.controls.apellidoMaterno.invalid
+                  "
+                >
+                  Ingresa el apellido materno.
+                </small>
+              </label>
+
+              <label class="atencion-home__field">
+                <span>Sexo</span>
+                <select formControlName="sexo">
+                  <option [ngValue]="null">Seleccionar</option>
+                  <option
+                    *ngFor="let sexo of sexoOptions"
+                    [value]="sexo.value"
+                  >
+                    {{ sexo.label }}
+                  </option>
+                </select>
+                <small
+                  *ngIf="
+                    manualForm.controls.sexo.touched &&
+                    manualForm.controls.sexo.invalid
+                  "
+                >
+                  Selecciona el sexo.
+                </small>
+              </label>
+            </div>
+
+            <div class="actions-row">
+              <button type="submit" class="button">
+                {{
+                  state.status === 'saving-manual'
+                    ? 'Guardando...'
+                    : 'Guardar ciudadano'
+                }}
+              </button>
+            </div>
+          </form>
+        </ng-container>
+
+        <ng-container *ngIf="shouldShowCitizenCard(state)">
+          <app-ciudadano-card
+            [ciudadano]="mapCiudadanoCard(state.ciudadano)"
+            [showActions]="true"
+            [secondaryLabel]="'Editar datos'"
+            [primaryLabel]="
+              state.status === 'starting-attention'
+                ? 'Iniciando...'
+                : state.status === 'attention-started'
+                  ? 'Atencion iniciada'
+                  : 'Iniciar atencion'
+            "
+            [primaryDisabled]="!canStartAttention(state)"
+            [originLabel]="resolveOriginLabel(state)"
+            [originDetail]="resolveOriginDetail(state)"
+            (secondaryAction)="onEditCitizen()"
+            (primaryAction)="onStartAttention()"
+          ></app-ciudadano-card>
+        </ng-container>
+
+        <app-empty-state
+          *ngIf="
+            !shouldShowLookupProgress(state) &&
+            !shouldShowManualForm(state) &&
+            !shouldShowCitizenCard(state) &&
+            !shouldShowError(state)
+          "
+          title="Sin resultado aun"
+          description="Busca al ciudadano desde la columna izquierda para mostrar aqui sus datos o habilitar el registro manual."
+        ></app-empty-state>
+      </section>
+    </div>
+
+    <section class="surface-card atencion-home__avisos-panel">
+      <div
+        *ngIf="!avisosLoading && avisosError"
+        class="atencion-home__notice atencion-home__notice--warning"
+      >
+        <div class="atencion-home__notice-copy">
+          <strong>No se pudieron cargar los avisos</strong>
+          <p>{{ avisosError }}</p>
+        </div>
+      </div>
+
+      <app-aviso-operativo-list
+        [avisos]="avisos"
+        [loading]="avisosLoading"
+        title="Avisos operativos recientes"
+        emptyTitle="Sin avisos operativos recientes"
+        emptyDescription="Los avisos recientes se muestran aqui como apoyo operativo para el asesor."
+      ></app-aviso-operativo-list>
+    </section>
+  </ng-container>
+</div>

@@ -1,0 +1,14 @@
+<div class="app-shell">
+  <div class="app-shell__ambient" aria-hidden="true"></div>
+  <div class="app-shell__frame">
+    <app-header></app-header>
+
+    <div class="app-shell__progress" *ngIf="isLoading$ | async"></div>
+
+    <main class="app-shell__main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <app-toast-stack></app-toast-stack>
+</div>

@@ -1,0 +1,7 @@
+<div class="loading-skeleton" [class.loading-skeleton--compact]="compact">
+  <span
+    *ngFor="let line of lineIndexes"
+    class="loading-skeleton__line"
+    [style.width.%]="line === 0 ? 92 : 100 - line * 7"
+  ></span>
+</div>

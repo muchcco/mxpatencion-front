@@ -1,0 +1,32 @@
+.session-bootstrap {
+  padding-top: 2rem;
+}
+
+.session-bootstrap__state,
+.session-bootstrap__success {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.2rem;
+}
+
+.session-bootstrap__expired {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(204, 138, 11, 0.24);
+  border-radius: 0.9rem;
+  background: #fff7ea;
+}
+
+.session-bootstrap__expired strong,
+.session-bootstrap__expired p {
+  margin: 0;
+}
+
+.session-bootstrap__expired p {
+  color: var(--color-text-700);
+}
+
+.session-bootstrap__expired .button {
+  justify-self: start;
+}

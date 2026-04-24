@@ -1,0 +1,160 @@
+.ciudadano-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 0.7rem;
+  border: 1px solid #d6e1ee;
+  border-radius: 0.95rem;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.ciudadano-card__band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #b9dfc7;
+  border-radius: 0.75rem;
+  background: #ecf8f0;
+}
+
+.ciudadano-card__band-copy strong {
+  font-size: 0.98rem;
+}
+
+.ciudadano-card__main {
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 0.25rem 0.35rem 0;
+}
+
+.ciudadano-card__avatar {
+  display: grid;
+  place-items: center;
+  width: 124px;
+  height: 132px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e6eef8 0%, #d6e4f5 100%);
+  color: #1a4f85;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.ciudadano-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ciudadano-card__content {
+  display: grid;
+  gap: 0.9rem;
+  padding-top: 0.08rem;
+}
+
+.ciudadano-card__header {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ciudadano-card__header h3 {
+  margin: 0;
+  font-size: 1.04rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.ciudadano-card__document-line {
+  margin: 0;
+  color: var(--color-text-700);
+  font-size: 0.91rem;
+}
+
+.ciudadano-card__document-line strong {
+  color: var(--color-text-900);
+}
+
+.ciudadano-card__actions {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.1rem;
+}
+
+.ciudadano-card__actions .button {
+  min-width: 160px;
+  min-height: 40px;
+}
+
+.ciudadano-card__origin {
+  display: grid;
+  grid-template-columns: 1.2rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.45rem;
+  padding: 0.72rem 0.82rem;
+  border: 1px solid #d6e2f2;
+  border-radius: 0.75rem;
+  background: #f3f8ff;
+}
+
+.ciudadano-card__origin-icon {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #1f63b4;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ciudadano-card__origin-copy {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.ciudadano-card__origin-copy strong {
+  display: block;
+  font-size: 0.87rem;
+}
+
+.ciudadano-card__origin-copy span {
+  display: block;
+  color: var(--color-text-700);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.ciudadano-card--empty {
+  padding: 1.2rem;
+  background: #f8fbff;
+  box-shadow: none;
+}
+
+.ciudadano-card--empty h3,
+.ciudadano-card--empty p {
+  margin: 0;
+}
+
+@media (max-width: 1199px) {
+  .ciudadano-card__main {
+    grid-template-columns: 1fr;
+  }
+
+  .ciudadano-card__avatar {
+    width: 108px;
+    height: 116px;
+  }
+
+  .ciudadano-card__actions .button {
+    min-width: 0;
+    flex: 1;
+  }
+}

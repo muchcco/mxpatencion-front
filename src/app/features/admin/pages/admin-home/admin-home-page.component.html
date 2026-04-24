@@ -1,0 +1,78 @@
+<div class="page" *ngIf="session$ | async as session">
+  <header class="page__header">
+    <div>
+      <span class="eyebrow">Configuracion operativa</span>
+      <h1 class="page__title">Administracion institucional</h1>
+      <p class="page__subtitle">
+        Espacio reservado para administradores y moderadores. Desde aqui se
+        preparan las reglas operativas de entidades, servicios y cobertura por region.
+      </p>
+    </div>
+  </header>
+
+  <div class="grid grid--3">
+    <section class="surface-card">
+      <h2 class="section-title">Entidades</h2>
+      <p class="section-copy">
+        Base para configurar entidades visibles, alcance institucional y estado operativo.
+      </p>
+      <div class="actions-row admin-home__actions">
+        <a class="button button--secondary" routerLink="/catalogos">
+          Ver catalogos
+        </a>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <h2 class="section-title">Servicios</h2>
+      <p class="section-copy">
+        Base para administrar servicios por entidad, enlaces externos y disponibilidad.
+      </p>
+    </section>
+
+    <section class="surface-card">
+      <h2 class="section-title">Cobertura por region</h2>
+      <p class="section-copy">
+        Punto de control para definir que entidades y servicios son visibles por region del asesor.
+      </p>
+    </section>
+  </div>
+
+  <div class="grid grid--2">
+    <section class="surface-card surface-card--muted">
+      <h2 class="section-title">Perfil actual</h2>
+      <div class="stat-list">
+        <div class="stat-item">
+          <span>Usuario</span>
+          <strong>{{ session.asesor?.nombreCompleto || 'Sin dato' }}</strong>
+        </div>
+        <div class="stat-item">
+          <span>Roles</span>
+          <strong>{{ (session.asesor?.roles || []).join(', ') || 'Sin roles informados' }}</strong>
+        </div>
+        <div class="stat-item">
+          <span>Region</span>
+          <strong>{{ session.asesor?.regionNombre || 'Sin region' }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <h2 class="section-title">Integraciones pendientes</h2>
+      <div class="stat-list">
+        <div class="stat-item">
+          <span>CRUD entidades</span>
+          <strong>Pendiente de endpoint backend</strong>
+        </div>
+        <div class="stat-item">
+          <span>CRUD servicios</span>
+          <strong>Pendiente de endpoint backend</strong>
+        </div>
+        <div class="stat-item">
+          <span>Asignacion regional</span>
+          <strong>Pendiente de endpoint backend</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ciudadano-search-form {
+  display: grid;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.ciudadano-search-form__header .section-title {
+  margin: 0;
+  font-size: 1.03rem;
+}
+
+.ciudadano-search-form__grid {
+  display: grid;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.ciudadano-search-form__field {
+  display: grid;
+  gap: 0.34rem;
+}
+
+.ciudadano-search-form__field span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #243f61;
+}
+
+.ciudadano-search-form__field input,
+.ciudadano-search-form__field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 0.78rem;
+  border: 1px solid #c5d4e4;
+  border-radius: 0.6rem;
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+.ciudadano-search-form__field input:focus,
+.ciudadano-search-form__field select:focus {
+  outline: none;
+  border-color: rgba(21, 95, 159, 0.45);
+  box-shadow: 0 0 0 3px rgba(21, 95, 159, 0.1);
+}
+
+.ciudadano-search-form__field small {
+  color: var(--color-danger);
+  font-size: 0.76rem;
+}
+
+.ciudadano-search-form__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.ciudadano-search-form__actions .button {
+  width: 100%;
+  min-height: 38px;
+}
+
+.ciudadano-search-form__status-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.ciudadano-search-form__status-list strong {
+  font-size: 0.85rem;
+  color: #243f61;
+}
+
+.ciudadano-search-form__status-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.36rem;
+}
+
+.ciudadano-search-form__status-item {
+  padding: 0.38rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-size: 0.79rem;
+  color: #3b5f86;
+}
+
+.ciudadano-search-form__status-item--local {
+  background: #eaf3ff;
+}
+
+.ciudadano-search-form__status-item--pide {
+  background: #edf5ff;
+}
+
+.ciudadano-search-form__status-item--manual {
+  background: #fff4e5;
+}
+
+.ciudadano-search-form__status-item--found {
+  background: #eaf8ef;
+}
+
+.ciudadano-search-form__status-item--error {
+  background: #fdeced;
+}
+
+.ciudadano-search-form__status-item--active {
+  border-color: #9bbfe6;
+  font-weight: 700;
+}
+
+@media (max-width: 1199px) {
+  .ciudadano-search-form__actions {
+    grid-template-columns: 1fr;
+  }
+}

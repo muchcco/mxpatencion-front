@@ -1,0 +1,84 @@
+<header class="app-header">
+  <div class="app-header__brand">
+    <div class="app-header__brand-mark">
+      <span>S</span>
+    </div>
+    <div class="app-header__brand-copy">
+      <strong>SISAC</strong>
+      <span>Sistema de Atencion de Servicios Ciudadanos</span>
+    </div>
+  </div>
+
+  <nav
+    class="app-header__nav"
+    aria-label="Navegacion principal"
+    *ngIf="session$ | async as session"
+  >
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="app-header__link--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="app-header__link"
+    >
+      Inicio
+    </a>
+    <a
+      routerLink="/atencion"
+      routerLinkActive="app-header__link--active"
+      class="app-header__link"
+    >
+      Nueva atencion
+    </a>
+    <a
+      routerLink="/avisos-operativos"
+      routerLinkActive="app-header__link--active"
+      class="app-header__link"
+    >
+      Avisos
+    </a>
+    <a
+      *ngIf="canAccessAdmin(session.asesor)"
+      routerLink="/admin"
+      routerLinkActive="app-header__link--active"
+      class="app-header__link"
+    >
+      Configuracion
+    </a>
+  </nav>
+
+  <section class="app-header__session" *ngIf="session$ | async as session">
+    <app-status-badge
+      [label]="resolveStatusLabel(session.status)"
+      [tone]="resolveStatusTone(session.status)"
+    ></app-status-badge>
+
+    <div class="app-header__advisor">
+      <div class="app-header__avatar">
+        {{ resolveInitials(session.asesor?.nombreCompleto) }}
+      </div>
+
+      <div class="app-header__advisor-copy">
+        <span class="app-header__advisor-label">Asesor</span>
+        <strong>{{
+          session.asesor?.nombreCompleto || 'Sesion institucional pendiente'
+        }}</strong>
+        <span>
+          {{ session.asesor?.regionNombre || 'Region por confirmar' }}
+          <ng-container *ngIf="session.asesor?.sedeNombre">
+            - {{ session.asesor?.sedeNombre }}
+          </ng-container>
+        </span>
+      </div>
+    </div>
+
+    <button
+      *ngIf="session.status === 'authenticated'"
+      type="button"
+      class="app-header__logout"
+      (click)="logout()"
+      [disabled]="loggingOut"
+    >
+      {{ loggingOut ? 'Saliendo...' : 'Cerrar sesion' }}
+    </button>
+  </section>
+</header>

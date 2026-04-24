@@ -1,0 +1,106 @@
+<div class="ciudadano-search-form">
+  <div class="ciudadano-search-form__header">
+    <h2 class="section-title">Buscar ciudadano</h2>
+  </div>
+
+  <form
+    class="ciudadano-search-form__grid"
+    [formGroup]="searchForm"
+    (ngSubmit)="submitSearch()"
+  >
+    <label class="ciudadano-search-form__field">
+      <span>Tipo de documento</span>
+      <select formControlName="tipoDocumentoId" [disabled]="busy">
+        <option [ngValue]="null">Seleccionar</option>
+        <option
+          *ngFor="let tipo of tiposDocumento; trackBy: trackByTipoDocumento"
+          [ngValue]="tipo.id_tipo_documento"
+        >
+          {{ tipo.nombre }}
+        </option>
+      </select>
+      <small
+        *ngIf="
+          searchForm.controls.tipoDocumentoId.touched &&
+          searchForm.controls.tipoDocumentoId.invalid
+        "
+      >
+        Seleccione un tipo de documento.
+      </small>
+    </label>
+
+    <label class="ciudadano-search-form__field">
+      <span>Numero de documento</span>
+      <input
+        type="text"
+        formControlName="numeroDocumento"
+        placeholder="Ingresa el numero"
+        [disabled]="busy"
+      />
+      <small
+        *ngIf="
+          searchForm.controls.numeroDocumento.touched &&
+          searchForm.controls.numeroDocumento.invalid
+        "
+      >
+        Ingresa un numero valido.
+      </small>
+    </label>
+
+    <div class="ciudadano-search-form__actions">
+      <button type="submit" class="button" [disabled]="busy">
+        {{ busy ? 'Procesando...' : 'Buscar' }}
+      </button>
+      <button
+        type="button"
+        class="button button--secondary"
+        [disabled]="busy"
+        (click)="clear()"
+      >
+        Limpiar
+      </button>
+    </div>
+  </form>
+
+  <div class="ciudadano-search-form__status-list">
+    <strong>Estados de busqueda</strong>
+    <ul>
+      <li
+        class="ciudadano-search-form__status-item ciudadano-search-form__status-item--local"
+        [class.ciudadano-search-form__status-item--active]="
+          status === 'searching-local'
+        "
+      >
+        Buscando en base local
+      </li>
+      <li
+        class="ciudadano-search-form__status-item ciudadano-search-form__status-item--pide"
+        [class.ciudadano-search-form__status-item--active]="
+          status === 'searching-pide'
+        "
+      >
+        Consultando PIDE
+      </li>
+      <li
+        class="ciudadano-search-form__status-item ciudadano-search-form__status-item--manual"
+        [class.ciudadano-search-form__status-item--active]="
+          status === 'manual' || status === 'saving-manual'
+        "
+      >
+        PIDE no disponible
+      </li>
+      <li
+        class="ciudadano-search-form__status-item ciudadano-search-form__status-item--found"
+        [class.ciudadano-search-form__status-item--active]="status === 'found'"
+      >
+        Ciudadano encontrado
+      </li>
+      <li
+        class="ciudadano-search-form__status-item ciudadano-search-form__status-item--error"
+        [class.ciudadano-search-form__status-item--active]="status === 'error'"
+      >
+        No encontrado
+      </li>
+    </ul>
+  </div>
+</div>

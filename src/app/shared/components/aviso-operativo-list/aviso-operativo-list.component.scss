@@ -1,0 +1,29 @@
+.aviso-list {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.aviso-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.aviso-list__header > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.aviso-list__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.aviso-list__items {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}

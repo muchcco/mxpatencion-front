@@ -1,0 +1,145 @@
+:host {
+  display: block;
+}
+
+.dashboard-home {
+  gap: 1rem;
+}
+
+.dashboard-home__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  background: linear-gradient(180deg, #f4f9ff 0%, #edf5ff 100%);
+}
+
+.dashboard-home__hero-copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.dashboard-home__hero-copy .page__title {
+  font-size: 1.8rem;
+}
+
+.dashboard-home__hero-copy .page__subtitle {
+  margin-top: 0;
+  max-width: 52rem;
+}
+
+.dashboard-home__date {
+  margin: 0.25rem 0 0;
+  font-size: 0.86rem;
+  color: var(--color-text-700);
+  text-transform: capitalize;
+}
+
+.dashboard-home__hero-actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.dashboard-home__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-home__steps,
+.dashboard-home__ops {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dashboard-home__step-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.dashboard-home__step-item {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: #f8fbff;
+}
+
+.dashboard-home__step-item strong {
+  font-size: 0.9rem;
+}
+
+.dashboard-home__step-item span {
+  color: var(--color-text-700);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.dashboard-home__ops-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.dashboard-home__ops-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid #d9e5f2;
+  border-radius: 0.75rem;
+  background: #f5f9ff;
+}
+
+.dashboard-home__ops-card span {
+  color: var(--color-text-700);
+  font-size: 0.8rem;
+}
+
+.dashboard-home__ops-card strong {
+  font-size: 1.25rem;
+}
+
+.dashboard-home__ops-card--danger {
+  background: #fff3f3;
+}
+
+.dashboard-home__ops-card--warning {
+  background: #fff8ed;
+}
+
+.dashboard-home__ops-card--info {
+  background: #edf6ff;
+}
+
+.dashboard-home__avisos {
+  background: #f9fcff;
+}
+
+.dashboard-home__notice {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+}
+
+.dashboard-home__notice p,
+.dashboard-home__notice strong {
+  margin: 0;
+}
+
+.dashboard-home__notice--warning {
+  background: #fff7ea;
+  border: 1px solid rgba(204, 138, 11, 0.2);
+}
+
+@media (max-width: 1199px) {
+  .dashboard-home__hero,
+  .dashboard-home__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-home__hero-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,25 @@
+<section class="aviso-list">
+  <div class="aviso-list__header">
+    <div>
+      <span class="eyebrow">Panel</span>
+      <h2>{{ title }}</h2>
+    </div>
+    <span class="pill">{{ avisos.length }}</span>
+  </div>
+
+  <app-loading-skeleton *ngIf="loading" [lines]="3"></app-loading-skeleton>
+
+  <div class="aviso-list__items" *ngIf="!loading && avisos.length > 0">
+    <app-aviso-operativo-item
+      *ngFor="let aviso of avisos; trackBy: trackById"
+      [aviso]="aviso"
+    ></app-aviso-operativo-item>
+  </div>
+
+  <app-empty-state
+    *ngIf="!loading && avisos.length === 0"
+    [title]="emptyTitle"
+    [description]="emptyDescription"
+    [compact]="true"
+  ></app-empty-state>
+</section>

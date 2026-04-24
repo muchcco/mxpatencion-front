@@ -1,0 +1,139 @@
+<div class="page atencion-entidad" *ngIf="state$ | async as state">
+  <header class="page__header">
+    <div>
+      <div class="atencion-entidad__heading-line">
+        <span class="eyebrow">Pantalla 2</span>
+        <span class="atencion-entidad__heading-title">Seleccion de entidad</span>
+      </div>
+      <h1 class="page__title">Selecciona una entidad</h1>
+      <p class="page__subtitle">
+        Elige la entidad visible para continuar con la atencion del ciudadano.
+      </p>
+    </div>
+  </header>
+
+  <app-stepper-atencion
+    [steps]="steps"
+    [currentIndex]="2"
+  ></app-stepper-atencion>
+
+  <section class="surface-card atencion-entidad__summary" *ngIf="state.ciudadano && state.atencion">
+    <div class="atencion-entidad__citizen">
+      <span class="eyebrow">Ciudadano</span>
+      <strong>
+        {{ state.ciudadano.nombres }}
+        {{ state.ciudadano.apellidoPaterno || state.ciudadano.apellidos || '' }}
+        {{ state.ciudadano.apellidoMaterno || '' }}
+      </strong>
+      <span>
+        {{ state.ciudadano.numeroDocumento || 'Sin documento' }}
+      </span>
+    </div>
+
+    <div class="atencion-entidad__attention">
+      <span class="eyebrow">Atencion</span>
+      <strong>#{{ state.atencion.id }}</strong>
+      <span>{{ state.atencion.estado || 'Iniciada' }}</span>
+    </div>
+  </section>
+
+  <section class="surface-card atencion-entidad__filters">
+    <label class="atencion-entidad__search">
+      <span>Buscar entidad</span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar por codigo, nombre o region"
+      />
+    </label>
+
+    <label class="atencion-entidad__scope">
+      <span>Por pagina</span>
+      <select
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
+        <option *ngFor="let size of pageSizeOptions" [ngValue]="size">
+          {{ size }} entidades
+        </option>
+      </select>
+    </label>
+  </section>
+
+  <section class="surface-card">
+    <app-loading-skeleton
+      *ngIf="entidadesLoading"
+      [lines]="5"
+    ></app-loading-skeleton>
+
+    <div
+      *ngIf="!entidadesLoading && entidadesError"
+      class="atencion-entidad__notice atencion-entidad__notice--warning"
+    >
+      <strong>No se pudieron cargar las entidades</strong>
+      <p>{{ entidadesError }}</p>
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="retryEntidades()"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <div
+      *ngIf="!entidadesLoading && !entidadesError && filteredEntidades.length > 0"
+      class="atencion-entidad__grid"
+    >
+      <app-entidad-card
+        *ngFor="let entidad of pagedEntidades; trackBy: trackByEntidadId"
+        [entidad]="mapEntidadCard(entidad)"
+        [actionLabel]="
+          selectingEntidadId === entidad.id ? 'Seleccionando...' : 'Seleccionar entidad'
+        "
+        (selected)="onSelectEntidad(entidad)"
+      ></app-entidad-card>
+    </div>
+
+    <div
+      class="atencion-entidad__pagination"
+      *ngIf="!entidadesLoading && !entidadesError && filteredEntidades.length > pageSize"
+    >
+      <button
+        type="button"
+        class="button button--secondary"
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
+      >
+        Anterior
+      </button>
+
+      <div class="atencion-entidad__page-list">
+        <button
+          type="button"
+          class="atencion-entidad__page-button"
+          *ngFor="let page of pageNumbers"
+          [class.atencion-entidad__page-button--active]="page === currentPage"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="button button--secondary"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Siguiente
+      </button>
+    </div>
+
+    <app-empty-state
+      *ngIf="!entidadesLoading && !entidadesError && filteredEntidades.length === 0"
+      title="Sin entidades visibles"
+      description="No hay entidades disponibles con el filtro actual."
+    ></app-empty-state>
+  </section>
+</div>

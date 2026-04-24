@@ -1,0 +1,335 @@
+<div class="page atencion-servicio" *ngIf="state$ | async as state">
+  <header class="page__header">
+    <div>
+      <div class="atencion-servicio__heading-line">
+        <span class="eyebrow">Pantalla 3</span>
+        <span class="atencion-servicio__heading-title">Seleccion de servicio</span>
+      </div>
+      <h1 class="page__title">Selecciona un servicio</h1>
+      <p class="page__subtitle">
+        Elige el servicio de la entidad seleccionada para continuar con la
+        atencion.
+      </p>
+    </div>
+  </header>
+
+  <app-stepper-atencion
+    [steps]="steps"
+    [currentIndex]="3"
+  ></app-stepper-atencion>
+
+  <section
+    class="surface-card atencion-servicio__summary"
+    *ngIf="state.ciudadano && state.entidad"
+  >
+    <div class="atencion-servicio__entity">
+      <span class="eyebrow">Entidad</span>
+      <strong>{{ state.entidad.nombre }}</strong>
+      <span>{{ state.entidad.alcance || 'Cobertura institucional' }}</span>
+    </div>
+
+    <div class="atencion-servicio__citizen">
+      <span class="eyebrow">Ciudadano</span>
+      <strong>
+        {{ state.ciudadano.nombres }}
+        {{ state.ciudadano.apellidoPaterno || state.ciudadano.apellidos || '' }}
+      </strong>
+      <span>{{ state.ciudadano.numeroDocumento || 'Sin documento' }}</span>
+    </div>
+  </section>
+
+  <section class="surface-card atencion-servicio__filters">
+    <label class="atencion-servicio__search">
+      <span>Buscar servicio</span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar por nombre o descripcion"
+      />
+    </label>
+
+    <div class="atencion-servicio__back-action">
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="goBackToEntidades()"
+      >
+        Volver a entidades
+      </button>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <app-loading-skeleton
+      *ngIf="serviciosLoading"
+      [lines]="5"
+    ></app-loading-skeleton>
+
+    <div
+      *ngIf="!serviciosLoading && serviciosError"
+      class="atencion-servicio__notice atencion-servicio__notice--warning"
+    >
+      <strong>No se pudieron cargar los servicios</strong>
+      <p>{{ serviciosError }}</p>
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="retryServicios()"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <div
+      *ngIf="!serviciosLoading && !serviciosError && filteredServicios.length > 0"
+      class="atencion-servicio__grid"
+    >
+      <app-servicio-card
+        *ngFor="let servicio of filteredServicios; trackBy: trackByServicioId"
+        [servicio]="mapServicioCard(servicio)"
+        [actionLabel]="
+          selectingServicioId === servicio.id
+            ? 'Seleccionando...'
+            : 'Seleccionar servicio'
+        "
+        secondaryLabel="Reportar falla"
+        (selected)="onSelectServicio(servicio)"
+        (secondaryAction)="openReportModal(servicio)"
+      ></app-servicio-card>
+    </div>
+
+    <app-empty-state
+      *ngIf="!serviciosLoading && !serviciosError && filteredServicios.length === 0"
+      title="Sin servicios visibles"
+      description="No hay servicios disponibles con el filtro actual."
+    ></app-empty-state>
+  </section>
+
+  <div
+    class="atencion-servicio__modal"
+    *ngIf="
+      serviceMonitorVisible && state.ciudadano && state.entidad && state.servicio
+    "
+  >
+    <div class="atencion-servicio__modal-backdrop"></div>
+
+    <section class="atencion-servicio__modal-panel surface-card">
+      <div class="atencion-servicio__modal-icon">i</div>
+
+      <header class="atencion-servicio__modal-header">
+        <h2>Servicio abierto en una nueva pestana</h2>
+        <p>
+          El tramite externo esta en curso. Manten esta pestana abierta para
+          monitorear el tiempo de atencion del servicio hasta finalizar la
+          atencion.
+        </p>
+      </header>
+
+      <section class="atencion-servicio__monitor-card">
+        <h3>Resumen de la atencion</h3>
+
+        <dl class="atencion-servicio__monitor-list">
+          <div class="atencion-servicio__monitor-item">
+            <dt>Ciudadano</dt>
+            <dd>{{ resolveCitizenFullName() }}</dd>
+          </div>
+
+          <div class="atencion-servicio__monitor-item">
+            <dt>DNI</dt>
+            <dd>{{ resolveCitizenDocument() }}</dd>
+          </div>
+
+          <div class="atencion-servicio__monitor-item">
+            <dt>Entidad</dt>
+            <dd>{{ state.entidad.nombre }}</dd>
+          </div>
+
+          <div class="atencion-servicio__monitor-item">
+            <dt>Servicio</dt>
+            <dd>{{ state.servicio.nombre }}</dd>
+          </div>
+
+          <div class="atencion-servicio__monitor-item">
+            <dt>Inicio del servicio</dt>
+            <dd>{{ resolveServiceStartLabel() }}</dd>
+          </div>
+
+          <div class="atencion-servicio__monitor-item">
+            <dt>Tiempo transcurrido</dt>
+            <dd class="atencion-servicio__elapsed">
+              {{ serviceMonitorElapsedLabel }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <div class="actions-row atencion-servicio__modal-actions">
+        <button
+          type="button"
+          class="button button--secondary"
+          [disabled]="finalizingAttention || startingNextAttention"
+          (click)="startNextAttention()"
+        >
+          {{ startingNextAttention ? 'Creando nueva...' : 'Nueva atencion' }}
+        </button>
+
+        <button
+          type="button"
+          class="button atencion-servicio__finish-button"
+          [disabled]="finalizingAttention || startingNextAttention"
+          (click)="finalizeAttention()"
+        >
+          {{ finalizingAttention ? 'Terminando...' : 'Terminar atencion' }}
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div
+    class="atencion-servicio__modal"
+    *ngIf="reportModalVisible && reportingServicio"
+  >
+    <div
+      class="atencion-servicio__modal-backdrop"
+      (click)="closeReportModal()"
+    ></div>
+
+    <section class="atencion-servicio__report-modal surface-card">
+      <header class="atencion-servicio__report-header">
+        <div>
+          <span class="eyebrow">Aviso operativo</span>
+          <h2>Reportar falla del servicio</h2>
+          <p>
+            Registra la incidencia para {{ reportingServicio.nombre }} y deja el
+            aviso operativo listo para seguimiento.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="atencion-servicio__report-close"
+          aria-label="Cerrar reporte de falla"
+          [disabled]="reportSubmitting"
+          (click)="closeReportModal()"
+        >
+          x
+        </button>
+      </header>
+
+      <form
+        class="atencion-servicio__report-form"
+        [formGroup]="reportForm"
+        autocomplete="off"
+        (ngSubmit)="submitReport()"
+      >
+        <div class="atencion-servicio__report-grid">
+          <label class="atencion-servicio__field">
+            <span>Tipo de falla</span>
+            <input
+              type="text"
+              formControlName="tipoFalla"
+              autocomplete="off"
+              placeholder="Ej. error de validacion, enlace caido"
+            />
+            <small
+              class="atencion-servicio__field-error"
+              *ngIf="
+                reportForm.controls.tipoFalla.touched &&
+                reportForm.controls.tipoFalla.invalid
+              "
+            >
+              Ingresa el tipo de falla.
+            </small>
+          </label>
+
+          <label class="atencion-servicio__field">
+            <span>Severidad</span>
+            <select formControlName="severidad">
+              <option value="baja">Baja</option>
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="atencion-servicio__field">
+          <span>Titulo</span>
+          <input
+            #reportTitleInput
+            type="text"
+            formControlName="titulo"
+            maxlength="120"
+            autocomplete="off"
+            placeholder="Resumen corto de la falla"
+          />
+          <small
+            class="atencion-servicio__field-error"
+            *ngIf="reportTitleControl.touched && reportTitleControl.invalid"
+          >
+            Ingresa un titulo del aviso.
+          </small>
+        </label>
+
+        <label class="atencion-servicio__field">
+          <span>Descripcion</span>
+          <textarea
+            rows="4"
+            formControlName="descripcion"
+            maxlength="500"
+            autocomplete="off"
+            placeholder="Describe que ocurrio y como impacta al asesor o al ciudadano"
+          ></textarea>
+          <small
+            class="atencion-servicio__field-error"
+            *ngIf="
+              reportDescriptionControl.touched &&
+              reportDescriptionControl.invalid
+            "
+          >
+            Ingresa una descripcion del problema.
+          </small>
+        </label>
+
+        <label class="atencion-servicio__field">
+          <span>URL reportada</span>
+          <input
+            type="url"
+            formControlName="urlReportada"
+            autocomplete="off"
+            placeholder="https://..."
+          />
+        </label>
+
+        <div class="atencion-servicio__report-summary">
+          <div>
+            <strong>Entidad</strong>
+            <span>{{ state.entidad?.nombre || 'Sin entidad' }}</span>
+          </div>
+          <div>
+            <strong>Servicio</strong>
+            <span>{{ reportingServicio.nombre }}</span>
+          </div>
+        </div>
+
+        <div class="actions-row atencion-servicio__report-actions">
+          <button
+            type="button"
+            class="button button--secondary"
+            [disabled]="reportSubmitting"
+            (click)="closeReportModal()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="button"
+            [disabled]="reportSubmitting"
+          >
+            {{ reportSubmitting ? 'Enviando...' : 'Enviar reporte' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

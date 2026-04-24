@@ -1,0 +1,100 @@
+<div class="page dashboard-home" *ngIf="session$ | async as session">
+  <section class="surface-card dashboard-home__hero">
+    <div class="dashboard-home__hero-copy">
+      <span class="eyebrow">Inicio de jornada</span>
+      <h1 class="page__title">
+        Hola, {{ session.asesor?.nombreCompleto || 'asesor' }}
+      </h1>
+      <p class="page__subtitle">
+        Desde aqui puedes iniciar una nueva atencion, continuar una atencion
+        pendiente y revisar avisos operativos.
+      </p>
+      <p class="dashboard-home__date">{{ nowLabel }}</p>
+    </div>
+
+    <div class="dashboard-home__hero-actions">
+      <button type="button" class="button" (click)="startAttentionFlow()">
+        {{ hasPendingAttention ? 'Continuar atencion' : 'Nueva atencion' }}
+      </button>
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="goToAvisos()"
+      >
+        Ver avisos operativos
+      </button>
+    </div>
+  </section>
+
+  <div class="dashboard-home__grid">
+    <app-advisor-summary
+      [asesor]="session.asesor"
+      [status]="session.status"
+    ></app-advisor-summary>
+
+    <section class="surface-card dashboard-home__steps">
+      <h2 class="section-title">Guia rapida</h2>
+      <div class="dashboard-home__step-list">
+        <div class="dashboard-home__step-item">
+          <strong>1. Identifica al ciudadano</strong>
+          <span>Ingresa documento y busca primero en base local.</span>
+        </div>
+        <div class="dashboard-home__step-item">
+          <strong>2. Selecciona entidad y servicio</strong>
+          <span>Elige la entidad visible y luego el servicio requerido.</span>
+        </div>
+        <div class="dashboard-home__step-item">
+          <strong>3. Finaliza la atencion</strong>
+          <span>Cierra la atencion cuando el tramite termine.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface-card dashboard-home__ops">
+      <h2 class="section-title">Estado operativo</h2>
+      <div class="dashboard-home__ops-grid">
+        <div class="dashboard-home__ops-card">
+          <span>Total avisos</span>
+          <strong>{{ totalAvisos }}</strong>
+        </div>
+        <div class="dashboard-home__ops-card dashboard-home__ops-card--danger">
+          <span>Alta prioridad</span>
+          <strong>{{ highSeverityCount }}</strong>
+        </div>
+        <div class="dashboard-home__ops-card dashboard-home__ops-card--warning">
+          <span>Prioridad media</span>
+          <strong>{{ mediumSeverityCount }}</strong>
+        </div>
+        <div class="dashboard-home__ops-card dashboard-home__ops-card--info">
+          <span>Prioridad baja</span>
+          <strong>{{ lowSeverityCount }}</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="surface-card dashboard-home__avisos">
+    <div
+      *ngIf="!avisosLoading && avisosError"
+      class="dashboard-home__notice dashboard-home__notice--warning"
+    >
+      <strong>No se pudieron cargar los avisos recientes</strong>
+      <p>{{ avisosError }}</p>
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="retryAvisos()"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <app-aviso-operativo-list
+      *ngIf="!avisosError"
+      [avisos]="avisos"
+      [loading]="avisosLoading"
+      emptyTitle="Sin avisos recientes"
+      emptyDescription="No hay incidencias registradas por el momento."
+    ></app-aviso-operativo-list>
+  </section>
+</div>

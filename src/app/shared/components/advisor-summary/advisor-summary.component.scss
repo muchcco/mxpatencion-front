@@ -1,0 +1,12 @@
+.advisor-summary {
+  display: grid;
+  gap: 1rem;
+  background: linear-gradient(180deg, #f4f9ff 0%, #edf5ff 100%);
+}
+
+.advisor-summary__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}

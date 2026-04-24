@@ -1,0 +1,64 @@
+.servicio-card {
+  display: grid;
+  gap: 0.95rem;
+  padding: 1.2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-card);
+}
+
+.servicio-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.servicio-card__logo {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 0.6rem;
+  border: 1px solid #d3dfed;
+  background: #f4f8fd;
+  color: #1b5fa9;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.servicio-card__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.servicio-card h3,
+.servicio-card p {
+  margin: 0;
+}
+
+.servicio-card p {
+  color: var(--color-text-700);
+  line-height: 1.6;
+}
+
+.servicio-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.servicio-card__footer > span {
+  color: var(--color-text-700);
+  font-size: 0.84rem;
+}
+
+.servicio-card__footer .actions-row {
+  margin-left: auto;
+}

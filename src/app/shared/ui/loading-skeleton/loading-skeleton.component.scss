@@ -1,0 +1,33 @@
+.loading-skeleton {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.loading-skeleton__line {
+  display: block;
+  height: 0.95rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(219, 230, 239, 0.82),
+      rgba(245, 249, 252, 0.96),
+      rgba(219, 230, 239, 0.82)
+    );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.3s linear infinite;
+}
+
+.loading-skeleton--compact .loading-skeleton__line {
+  height: 0.72rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}

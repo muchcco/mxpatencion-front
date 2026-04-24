@@ -1,0 +1,31 @@
+<section class="advisor-summary surface-card surface-card--accent">
+  <div class="advisor-summary__header">
+    <div>
+      <span class="eyebrow">Tu sesion</span>
+      <h2 class="section-title">Datos del asesor</h2>
+    </div>
+    <app-status-badge
+      [label]="resolveStatusLabel()"
+      [tone]="resolveStatusTone()"
+    ></app-status-badge>
+  </div>
+
+  <div class="stat-list">
+    <div class="stat-item">
+      <span>Nombre</span>
+      <strong>{{ asesor?.nombreCompleto || 'Pendiente de carga' }}</strong>
+    </div>
+    <div class="stat-item">
+      <span>Region</span>
+      <strong>{{ asesor?.regionNombre || 'Por confirmar' }}</strong>
+    </div>
+    <div class="stat-item">
+      <span>Sede</span>
+      <strong>{{ asesor?.sedeNombre || 'No informada' }}</strong>
+    </div>
+    <div class="stat-item">
+      <span>Cargo</span>
+      <strong>{{ asesor?.cargo || 'Asesor de atencion' }}</strong>
+    </div>
+  </div>
+</section>

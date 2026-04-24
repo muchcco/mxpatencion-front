@@ -1,0 +1,10 @@
+{
+  "/mexpres-atencion-backend": {
+    "target": "http://192.168.224.25",
+    "secure": false,
+    "changeOrigin": true,
+    "cookieDomainRewrite": "localhost",
+    "logLevel": "debug"
+  }
+}
+

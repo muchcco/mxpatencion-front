@@ -1,0 +1,152 @@
+.atencion-home {
+  gap: 1.15rem;
+}
+
+.atencion-home .page__header {
+  gap: 0.4rem;
+}
+
+.atencion-home .page__title {
+  font-size: 2rem;
+}
+
+.atencion-home .page__subtitle {
+  max-width: 48rem;
+  margin-top: 0.2rem;
+}
+
+.atencion-home__layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 0.95rem;
+  align-items: start;
+}
+
+.atencion-home__search,
+.atencion-home__result {
+  min-width: 0;
+}
+
+.atencion-home__search {
+  padding: 0.9rem;
+  background: #eef4fb;
+  border-radius: 0.9rem;
+}
+
+.atencion-home__result {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  background: #f7fbff;
+  border-radius: 0.9rem;
+  align-content: start;
+}
+
+.atencion-home__avisos-panel {
+  margin-top: 0.2rem;
+  background: #f7fbff;
+}
+
+.atencion-home__notice {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.9rem 0.95rem;
+  border: 1px solid #dce7f2;
+  border-radius: 0.75rem;
+}
+
+.atencion-home__notice--info {
+  background: #eef5fd;
+}
+
+.atencion-home__notice--warning {
+  background: #fff7ea;
+}
+
+.atencion-home__notice--danger {
+  background: #fdf1f1;
+}
+
+.atencion-home__notice-copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.atencion-home__notice-copy strong,
+.atencion-home__notice-copy p {
+  margin: 0;
+}
+
+.atencion-home__notice-copy p {
+  color: var(--color-text-700);
+  line-height: 1.5;
+}
+
+.atencion-home__manual-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dde6f0;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.atencion-home__manual-header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.atencion-home__manual-header h3,
+.atencion-home__manual-header p {
+  margin: 0;
+}
+
+.atencion-home__manual-header p {
+  color: var(--color-text-700);
+}
+
+.atencion-home__manual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.atencion-home__field {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.atencion-home__field--full {
+  grid-column: 1 / -1;
+}
+
+.atencion-home__field span {
+  font-weight: 700;
+}
+
+.atencion-home__field input,
+.atencion-home__field select {
+  min-height: 42px;
+  padding: 0 0.8rem;
+  border: 1px solid #c5d4e4;
+  border-radius: 0.72rem;
+  background: #ffffff;
+}
+
+.atencion-home__field input:focus,
+.atencion-home__field select:focus {
+  outline: none;
+  border-color: rgba(22, 95, 159, 0.42);
+  box-shadow: 0 0 0 3px rgba(22, 95, 159, 0.08);
+}
+
+.atencion-home__field small {
+  color: var(--color-danger);
+}
+
+@media (max-width: 1199px) {
+  .atencion-home__layout,
+  .atencion-home__manual-grid {
+    grid-template-columns: 1fr;
+  }
+}

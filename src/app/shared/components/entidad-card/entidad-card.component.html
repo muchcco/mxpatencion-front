@@ -1,0 +1,44 @@
+<article class="entidad-card">
+  <ng-container *ngIf="entidad; else entidadEmpty">
+    <div class="entidad-card__top">
+      <div class="entidad-card__logo">
+        <img
+          *ngIf="entidad.logoUrl; else entidadLogoFallback"
+          [src]="entidad.logoUrl || ''"
+          alt="Logo de entidad"
+        />
+        <ng-template #entidadLogoFallback>
+          {{ resolveInitials(entidad.nombre) }}
+        </ng-template>
+      </div>
+      <div class="entidad-card__copy">
+        <h3>{{ entidad.nombre }}</h3>
+        <span class="entidad-card__code" *ngIf="entidad.codigo">
+          Codigo: {{ entidad.codigo }}
+        </span>
+        <p>
+          {{
+            entidad.descripcion ||
+              'Entidad disponible para la atencion segun la region del asesor.'
+          }}
+        </p>
+      </div>
+    </div>
+
+    <div class="entidad-card__footer">
+      <span class="entidad-card__availability">Disponible</span>
+      <button
+        type="button"
+        class="button button--secondary"
+        (click)="selected.emit()"
+      >
+        {{ actionLabel }} <span aria-hidden="true">></span>
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-template #entidadEmpty>
+    <h3>Sin entidad cargada</h3>
+    <p>El componente queda listo para el paso de seleccion de entidad.</p>
+  </ng-template>
+</article>

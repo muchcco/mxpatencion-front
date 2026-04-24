@@ -1,0 +1,17 @@
+<article class="aviso-item" [ngClass]="resolveSeverityClass()">
+  <div class="aviso-item__top">
+    <app-status-badge
+      [label]="resolveSeverityLabel()"
+      [tone]="resolveSeverityTone()"
+    ></app-status-badge>
+    <span class="muted">{{ formatFecha(aviso.fecha) }}</span>
+  </div>
+
+  <div class="aviso-item__route" *ngIf="aviso.entidad || aviso.servicio">
+    <strong>{{ aviso.entidad || 'Entidad' }}</strong>
+    <span *ngIf="aviso.servicio">- {{ aviso.servicio }}</span>
+  </div>
+
+  <h3>{{ aviso.titulo }}</h3>
+  <p>{{ aviso.descripcion }}</p>
+</article>
