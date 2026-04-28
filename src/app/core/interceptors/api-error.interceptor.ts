@@ -13,6 +13,10 @@ import { SKIP_GLOBAL_ERROR } from '../models/http-context-tokens.model';
 import { ApiBaseService } from '../services/api-base.service';
 import { NotificationService } from '../services/notification.service';
 import { SessionContextService } from '../services/session-context.service';
+import {
+  TAB_LOCK_BLOCKED_MESSAGE,
+  TabLockService
+} from '../services/tab-lock.service';
 
 @Injectable()
 export class ApiErrorInterceptor implements HttpInterceptor {
@@ -20,7 +24,8 @@ export class ApiErrorInterceptor implements HttpInterceptor {
     private readonly apiBaseService: ApiBaseService,
     private readonly notificationService: NotificationService,
     private readonly router: Router,
-    private readonly sessionContextService: SessionContextService
+    private readonly sessionContextService: SessionContextService,
+    private readonly tabLockService: TabLockService
   ) {}
 
   public intercept(
@@ -34,6 +39,26 @@ export class ApiErrorInterceptor implements HttpInterceptor {
         }
 
         const skipGlobalHandling = request.context.get(SKIP_GLOBAL_ERROR);
+
+        if (this.isSessionAlreadyActive(error)) {
+          const shouldAlert = this.tabLockService.blockFromBackend();
+
+          this.sessionContextService.setAnonymous(TAB_LOCK_BLOCKED_MESSAGE);
+
+          if (shouldAlert) {
+            window.alert(TAB_LOCK_BLOCKED_MESSAGE);
+          }
+
+          void this.router.navigate(['/sesion/bloqueada'], {
+            queryParams: {
+              reason: 'backend-session-active',
+              redirectTo: this.resolveCleanPath(this.router.url)
+            },
+            replaceUrl: true
+          });
+
+          return throwError(() => error);
+        }
 
         if (!skipGlobalHandling && (error.status === 401 || error.status === 419)) {
           this.sessionContextService.setAnonymous(
@@ -74,5 +99,33 @@ export class ApiErrorInterceptor implements HttpInterceptor {
     }
 
     return apiMessage || 'Ocurrio un problema inesperado con la API.';
+  }
+
+  private isSessionAlreadyActive(error: HttpErrorResponse): boolean {
+    if (error.status !== 409) {
+      return false;
+    }
+
+    return this.resolveMetaReason(error.error) === 'SESSION_ALREADY_ACTIVE';
+  }
+
+  private resolveMetaReason(errorPayload: unknown): string | null {
+    if (!errorPayload || typeof errorPayload !== 'object') {
+      return null;
+    }
+
+    const meta = (errorPayload as { meta?: unknown }).meta;
+
+    if (!meta || typeof meta !== 'object') {
+      return null;
+    }
+
+    const reason = (meta as { reason?: unknown }).reason;
+    return typeof reason === 'string' ? reason : null;
+  }
+
+  private resolveCleanPath(url: string): string {
+    const cleanPath = url.split('?')[0] || '/dashboard';
+    return cleanPath === '/' ? '/dashboard' : cleanPath;
   }
 }

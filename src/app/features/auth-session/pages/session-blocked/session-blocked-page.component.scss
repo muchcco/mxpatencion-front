@@ -1,0 +1,36 @@
+.session-blocked {
+  min-height: 100vh;
+  padding: 2rem;
+  align-content: center;
+}
+
+.session-blocked__panel,
+.session-blocked__content {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.session-blocked__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.session-blocked__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 1199px) {
+  .session-blocked {
+    padding: 1rem;
+  }
+
+  .session-blocked__actions {
+    justify-content: stretch;
+  }
+
+  .session-blocked__actions .button {
+    width: 100%;
+  }
+}

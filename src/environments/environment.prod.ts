@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: '/mexpres-atencion-backend/api/v1',
-  authLoginUrl: 'http://localhost/auth-server/public/'
+  apiBaseUrl: 'https://apiatencionmacexpress.mac.gob.pe/api/v1',
+  authLoginUrl: 'https://sismac.mac.pe/'
 };

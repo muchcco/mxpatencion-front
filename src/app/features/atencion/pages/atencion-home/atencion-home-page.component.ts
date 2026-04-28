@@ -101,10 +101,34 @@ export class AtencionHomePageComponent implements OnInit {
     this.ciudadanosService.buscar(payload).pipe(take(1)).subscribe({
       next: (result) => {
         if (result.ciudadano) {
-          this.atencionStateService.setFound(
-            this.enrichCiudadano(result.ciudadano, 'LOCAL'),
-            result.message || 'Ciudadano encontrado en la base local.'
-          );
+          const localCiudadano = this.enrichCiudadano(result.ciudadano, 'LOCAL');
+          const shouldRefreshFromPide =
+            result.nextAction === 'CONSULT_PIDE_REFRESH_PHOTO' ||
+            result.canRefreshFromPide;
+
+          if (shouldRefreshFromPide) {
+            const pideValidation = this.validatePideEligibility(payload);
+
+            if (!pideValidation.allowed) {
+              this.atencionStateService.setFound(
+                localCiudadano,
+                `${
+                  result.message || 'Ciudadano encontrado en la base local.'
+                } ${pideValidation.reason}`
+              );
+              return;
+            }
+
+            this.consultarPide(payload, {
+              initialMessage:
+                result.message ||
+                'Ciudadano encontrado en base local. Actualizando datos/foto desde PIDE...',
+              fallbackCiudadano: localCiudadano
+            });
+            return;
+          }
+
+          this.atencionStateService.setFound(localCiudadano, result.message || 'Ciudadano encontrado en la base local.');
           return;
         }
 
@@ -116,7 +140,18 @@ export class AtencionHomePageComponent implements OnInit {
           return;
         }
 
-        this.consultarPide(payload, result.message);
+        const pideValidation = this.validatePideEligibility(payload);
+
+        if (!pideValidation.allowed) {
+          this.atencionStateService.enableManual(
+            `${result.message || 'No se encontro localmente.'} ${pideValidation.reason}`
+          );
+          return;
+        }
+
+        this.consultarPide(payload, {
+          initialMessage: result.message
+        });
       },
       error: () => {
         this.atencionStateService.setError(
@@ -301,7 +336,7 @@ export class AtencionHomePageComponent implements OnInit {
       sexo: this.resolveSexoLabel(ciudadano.sexo),
       direccion: ciudadano.direccion,
       fotoUrl: ciudadano.fotoUrl,
-      fuente: this.resolveFuenteLabel(ciudadano.fuente)
+      fuente: this.resolveFuenteLabel(this.resolveDisplayFuente(ciudadano))
     };
   }
 
@@ -340,7 +375,10 @@ export class AtencionHomePageComponent implements OnInit {
       return 'Manual';
     }
 
-    return this.resolveFuenteLabel(state.ciudadano?.fuente) || 'Pendiente';
+    return (
+      this.resolveFuenteLabel(this.resolveDisplayFuente(state.ciudadano)) ||
+      'Pendiente'
+    );
   }
 
   public resolveNoticeTitle(state: AtencionState): string {
@@ -364,7 +402,26 @@ export class AtencionHomePageComponent implements OnInit {
       return null;
     }
 
-    const fuente = state.ciudadano.fuente;
+    const fuenteInicial = this.resolveAuditSourceLabel(
+      state.ciudadano.fuenteOrigenInicial
+    );
+    const fuenteActual = this.resolveAuditSourceLabel(
+      state.ciudadano.fuenteUltimaActualizacion
+    );
+
+    if (fuenteInicial && fuenteActual && fuenteInicial !== fuenteActual) {
+      return `Origen auditado: ${fuenteInicial} -> ${fuenteActual}`;
+    }
+
+    if (fuenteActual) {
+      return `Origen actual: ${fuenteActual}`;
+    }
+
+    if (fuenteInicial) {
+      return `Origen inicial: ${fuenteInicial}`;
+    }
+
+    const fuente = this.resolveDisplayFuente(state.ciudadano);
 
     if (fuente === 'LOCAL') {
       return 'Origen: Base de datos local';
@@ -386,8 +443,17 @@ export class AtencionHomePageComponent implements OnInit {
       return null;
     }
 
+    const sourceAuditParts = this.resolveSourceAuditParts(state.ciudadano);
+
     if (state.status === 'attention-started' && state.atencion) {
-      return `Atencion #${state.atencion.id} lista para continuar con entidad y servicio.`;
+      const attentionMessage = `Atencion #${state.atencion.id} lista para continuar con entidad y servicio.`;
+      return sourceAuditParts
+        ? `${sourceAuditParts}. ${attentionMessage}`
+        : attentionMessage;
+    }
+
+    if (sourceAuditParts) {
+      return `${sourceAuditParts}.`;
     }
 
     return 'Registro disponible para iniciar la atencion.';
@@ -395,12 +461,26 @@ export class AtencionHomePageComponent implements OnInit {
 
   private consultarPide(
     payload: BuscarCiudadanoPayload,
-    localMessage?: string
+    options?: {
+      initialMessage?: string;
+      fallbackCiudadano?: Ciudadano;
+    }
   ): void {
-    this.atencionStateService.startLookup(
-      'searching-pide',
-      localMessage || 'No se encontro localmente. Consultando PIDE...'
-    );
+    const initialMessage = options?.initialMessage;
+    const fallbackCiudadano = options?.fallbackCiudadano || null;
+
+    if (fallbackCiudadano) {
+      this.atencionStateService.setStatus(
+        'searching-pide',
+        initialMessage ||
+          'Ciudadano local encontrado. Consultando PIDE para actualizar datos y foto...'
+      );
+    } else {
+      this.atencionStateService.startLookup(
+        'searching-pide',
+        initialMessage || 'No se encontro localmente. Consultando PIDE...'
+      );
+    }
 
     this.ciudadanosService.consultarPide(payload).pipe(take(1)).subscribe({
       next: (result) => {
@@ -412,12 +492,29 @@ export class AtencionHomePageComponent implements OnInit {
           return;
         }
 
+        if (fallbackCiudadano) {
+          this.atencionStateService.setFound(
+            fallbackCiudadano,
+            result.message ||
+              'No se pudo refrescar datos desde PIDE. Se conserva el registro local.'
+          );
+          return;
+        }
+
         this.atencionStateService.enableManual(
           result.message ||
             'No se pudo obtener la informacion desde PIDE. Complete el registro manual.'
         );
       },
       error: () => {
+        if (fallbackCiudadano) {
+          this.atencionStateService.setFound(
+            fallbackCiudadano,
+            'No se pudo refrescar datos desde PIDE. Se conserva el registro local.'
+          );
+          return;
+        }
+
         this.atencionStateService.enableManual(
           'No se pudo obtener la informacion desde PIDE. Complete el registro manual.'
         );
@@ -492,9 +589,27 @@ export class AtencionHomePageComponent implements OnInit {
     ciudadano: Ciudadano,
     fuente: 'LOCAL' | 'PIDE' | 'MANUAL'
   ): Ciudadano {
+    const normalizedFuente = this.normalizeFuenteValue(ciudadano.fuente);
+    const normalizedFuenteInicial = this.normalizeFuenteValue(
+      ciudadano.fuenteOrigenInicial
+    );
+    const normalizedFuenteUltimaActualizacion = this.normalizeFuenteValue(
+      ciudadano.fuenteUltimaActualizacion
+    );
+
     return {
       ...ciudadano,
-      fuente: ciudadano.fuente || fuente
+      fuente:
+        normalizedFuente ||
+        normalizedFuenteUltimaActualizacion ||
+        normalizedFuenteInicial ||
+        fuente,
+      fuenteOrigenInicial: normalizedFuenteInicial || fuente,
+      fuenteUltimaActualizacion:
+        normalizedFuenteUltimaActualizacion ||
+        normalizedFuente ||
+        normalizedFuenteInicial ||
+        fuente
     };
   }
 
@@ -509,6 +624,100 @@ export class AtencionHomePageComponent implements OnInit {
       default:
         return fuente || 'Pendiente';
     }
+  }
+
+  private resolveDisplayFuente(ciudadano: Ciudadano | null | undefined): string | null {
+    if (!ciudadano) {
+      return null;
+    }
+
+    return (
+      this.normalizeFuenteValue(ciudadano.fuenteUltimaActualizacion) ||
+      this.normalizeFuenteValue(ciudadano.fuente) ||
+      this.normalizeFuenteValue(ciudadano.fuenteOrigenInicial)
+    );
+  }
+
+  private validatePideEligibility(payload: BuscarCiudadanoPayload): {
+    allowed: boolean;
+    reason: string;
+  } {
+    const tipoDocumento = this.resolveTipoDocumentoById(payload.tipoDocumentoId);
+
+    if (!tipoDocumento || !this.isDniTipoDocumento(tipoDocumento)) {
+      return {
+        allowed: false,
+        reason:
+          'Solo el DNI tiene integracion con PIDE. Para Carnet de Extranjeria, Pasaporte u otros documentos, continue con registro manual.'
+      };
+    }
+
+    const numeroDocumento = payload.numeroDocumento?.trim() || '';
+
+    if (!/^\d{8}$/.test(numeroDocumento)) {
+      return {
+        allowed: false,
+        reason:
+          'El DNI debe tener exactamente 8 digitos para consultar PIDE.'
+      };
+    }
+
+    return {
+      allowed: true,
+      reason: ''
+    };
+  }
+
+  private resolveTipoDocumentoById(
+    tipoDocumentoId: number | string | null | undefined
+  ): TipoDocumento | null {
+    if (tipoDocumentoId === null || tipoDocumentoId === undefined) {
+      return null;
+    }
+
+    return (
+      this.tiposDocumento.find(
+        (tipo) => Number(tipo.id_tipo_documento) === Number(tipoDocumentoId)
+      ) || null
+    );
+  }
+
+  private isDniTipoDocumento(tipoDocumento: TipoDocumento): boolean {
+    const codigo = tipoDocumento.codigo?.trim().toUpperCase() || '';
+    const nombre = tipoDocumento.nombre?.trim().toUpperCase() || '';
+
+    return codigo === 'DNI' || nombre.includes('DNI');
+  }
+
+  private resolveSourceAuditParts(ciudadano: Ciudadano): string | null {
+    const sourceParts: string[] = [];
+    const fuenteInicial = this.resolveAuditSourceLabel(
+      ciudadano.fuenteOrigenInicial
+    );
+    const fuenteActual = this.resolveAuditSourceLabel(
+      ciudadano.fuenteUltimaActualizacion
+    );
+
+    if (fuenteInicial) {
+      sourceParts.push(`Fuente inicial: ${fuenteInicial}`);
+    }
+
+    if (fuenteActual) {
+      sourceParts.push(`Ultima actualizacion: ${fuenteActual}`);
+    }
+
+    return sourceParts.length ? sourceParts.join(' | ') : null;
+  }
+
+  private resolveAuditSourceLabel(value: string | null | undefined): string | null {
+    const normalizedValue = this.normalizeFuenteValue(value);
+
+    return normalizedValue ? this.resolveFuenteLabel(normalizedValue) : null;
+  }
+
+  private normalizeFuenteValue(value: string | null | undefined): string | null {
+    const normalizedValue = value?.trim().toUpperCase();
+    return normalizedValue || null;
   }
 
   private resolveTipoDocumentoLabel(

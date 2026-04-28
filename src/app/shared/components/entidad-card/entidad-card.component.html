@@ -3,9 +3,10 @@
     <div class="entidad-card__top">
       <div class="entidad-card__logo">
         <img
-          *ngIf="entidad.logoUrl; else entidadLogoFallback"
-          [src]="entidad.logoUrl || ''"
+          *ngIf="resolveLogoSrc(); else entidadLogoFallback"
+          [src]="resolveLogoSrc() || ''"
           alt="Logo de entidad"
+          (error)="onLogoError()"
         />
         <ng-template #entidadLogoFallback>
           {{ resolveInitials(entidad.nombre) }}

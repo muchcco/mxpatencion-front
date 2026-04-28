@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from './core/guards/role.guard';
 import { SessionGuard } from './core/guards/session.guard';
+import { TabLockGuard } from './core/guards/tab-lock.guard';
 import { AppShellComponent } from './shared/layouts/app-shell/app-shell.component';
 
 const routes: Routes = [
@@ -22,8 +23,8 @@ const routes: Routes = [
   {
     path: '',
     component: AppShellComponent,
-    canActivate: [SessionGuard],
-    canActivateChild: [SessionGuard],
+    canActivate: [TabLockGuard, SessionGuard],
+    canActivateChild: [TabLockGuard, SessionGuard],
     children: [
       {
         path: '',

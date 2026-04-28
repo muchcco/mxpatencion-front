@@ -82,11 +82,13 @@ export class CiudadanosService {
     response: ApiResponse<Ciudadano | null>
   ): CiudadanoLookupResult {
     const nextAction = this.normalizeNextAction(response.meta);
+    const canRefreshFromPide = this.normalizeCanRefreshFromPide(response.meta);
 
     return {
       ciudadano: response.data ? this.normalizeCiudadano(response.data) : null,
       message: response.message || '',
-      nextAction
+      nextAction,
+      canRefreshFromPide
     };
   }
 
@@ -133,6 +135,9 @@ export class CiudadanosService {
       tipo_documento?: string | null;
       direccion_actual?: string | null;
       foto_url?: string | null;
+      fuente_origen_inicial?: string | null;
+      fuente_ultima_actualizacion?: string | null;
+      fuente_origen?: string | null;
     };
 
     const apellidoPaterno = this.cleanString(
@@ -149,6 +154,19 @@ export class CiudadanosService {
       this.normalizeId(
         rawCiudadano.tipoDocumentoId ?? rawCiudadano.id_tipo_documento
       ) ?? null;
+    const fuenteOrigenInicial = this.cleanString(
+      rawCiudadano.fuenteOrigenInicial ??
+        rawCiudadano.fuente_origen_inicial ??
+        rawCiudadano.fuente_origen
+    );
+    const fuenteUltimaActualizacion = this.cleanString(
+      rawCiudadano.fuenteUltimaActualizacion ??
+        rawCiudadano.fuente_ultima_actualizacion
+    );
+    const fuente =
+      this.cleanString(rawCiudadano.fuente) ||
+      fuenteUltimaActualizacion ||
+      fuenteOrigenInicial;
 
     return {
       ...rawCiudadano,
@@ -168,7 +186,10 @@ export class CiudadanosService {
       direccion: this.cleanString(
         rawCiudadano.direccion ?? rawCiudadano.direccion_actual
       ),
-      fotoUrl: this.cleanString(rawCiudadano.fotoUrl ?? rawCiudadano.foto_url)
+      fotoUrl: this.normalizeImageUrl(rawCiudadano.fotoUrl ?? rawCiudadano.foto_url),
+      fuente: fuente || undefined,
+      fuenteOrigenInicial,
+      fuenteUltimaActualizacion
     };
   }
 
@@ -177,6 +198,14 @@ export class CiudadanosService {
   ): string | null {
     const rawValue = meta?.['next_action'] ?? meta?.['nextAction'];
     return typeof rawValue === 'string' ? rawValue : null;
+  }
+
+  private normalizeCanRefreshFromPide(
+    meta: Record<string, unknown> | null | undefined
+  ): boolean {
+    const rawValue =
+      meta?.['can_refresh_from_pide'] ?? meta?.['canRefreshFromPide'];
+    return this.normalizeBoolean(rawValue);
   }
 
   private normalizeId(
@@ -199,5 +228,36 @@ export class CiudadanosService {
   private cleanString(value: string | null | undefined): string | null {
     const normalizedValue = value?.trim();
     return normalizedValue ? normalizedValue : null;
+  }
+
+  private normalizeImageUrl(value: string | null | undefined): string | null {
+    const normalizedValue = value?.trim();
+
+    if (!normalizedValue) {
+      return null;
+    }
+
+    if (/^https?:\/\//i.test(normalizedValue)) {
+      return normalizedValue;
+    }
+
+    return normalizedValue;
+  }
+
+  private normalizeBoolean(value: unknown): boolean {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim().toLowerCase();
+      return normalizedValue === '1' || normalizedValue === 'true';
+    }
+
+    return false;
   }
 }

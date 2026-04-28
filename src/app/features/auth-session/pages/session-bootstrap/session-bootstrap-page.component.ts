@@ -24,6 +24,8 @@ export class SessionBootstrapPageComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private countdownTimer: ReturnType<typeof window.setInterval> | null = null;
   private redirectingToLogin = false;
+  private redirectingToShell = false;
+  private callbackQueryCleared = false;
 
   public readonly session$ = this.sessionContextService.state$;
   public redirectTo = '/dashboard';
@@ -59,18 +61,11 @@ export class SessionBootstrapPageComponent implements OnInit, OnDestroy {
       rt: this.maskValue(this.callbackPayload.rt)
     });
 
-    if (this.hasSsoPayload()) {
-      this.clearSensitiveQueryParams();
-    }
-
     this.sessionContextService.state$
       .pipe(takeUntil(this.destroy$))
       .subscribe((session) => {
         if (session.status === 'authenticated') {
-          console.debug('[SSO Callback] Sesion autenticada, redirigiendo', {
-            redirectTo: this.redirectTo
-          });
-          void this.router.navigateByUrl(this.redirectTo);
+          this.handleAuthenticatedSession();
         }
       });
 
@@ -204,11 +199,35 @@ export class SessionBootstrapPageComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    if (this.hasSsoPayload()) {
+      return false;
+    }
+
     if (error.status === 401 || error.status === 419) {
       return true;
     }
 
-    return this.hasSsoPayload() && (error.status === 400 || error.status === 422);
+    return error.status === 400 || error.status === 422;
+  }
+
+  private handleAuthenticatedSession(): void {
+    if (this.redirectingToShell) {
+      return;
+    }
+
+    this.redirectingToShell = true;
+    console.debug('[SSO Callback] Sesion autenticada, redirigiendo', {
+      redirectTo: this.redirectTo
+    });
+
+    if (this.mode === 'callback' && this.hasSsoPayload()) {
+      void this.clearSensitiveQueryParams().finally(() => {
+        void this.router.navigateByUrl(this.redirectTo);
+      });
+      return;
+    }
+
+    void this.router.navigateByUrl(this.redirectTo);
   }
 
   private startExpiredSessionFlow(): void {
@@ -251,10 +270,17 @@ export class SessionBootstrapPageComponent implements OnInit, OnDestroy {
     return loginUrl.toString();
   }
 
-  private clearSensitiveQueryParams(): void {
+  private clearSensitiveQueryParams(): Promise<boolean> {
+    if (this.callbackQueryCleared) {
+      return Promise.resolve(true);
+    }
+
+    this.callbackQueryCleared = true;
     console.debug('[SSO Callback] Limpiando token/rt de la URL');
 
-    void this.router.navigate([], {
+    this.callbackPayload = {};
+
+    return this.router.navigate([], {
       relativeTo: this.activatedRoute,
       queryParams: {},
       replaceUrl: true

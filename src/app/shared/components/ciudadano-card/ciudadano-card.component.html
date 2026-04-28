@@ -13,9 +13,10 @@
   <div class="ciudadano-card__main">
     <div class="ciudadano-card__avatar">
       <img
-        *ngIf="ciudadano.fotoUrl; else ciudadanoAvatarInitials"
-        [src]="ciudadano.fotoUrl || ''"
+        *ngIf="resolveFotoSrc(); else ciudadanoAvatarInitials"
+        [src]="resolveFotoSrc() || ''"
         alt="Foto del ciudadano"
+        (error)="onFotoError()"
       />
       <ng-template #ciudadanoAvatarInitials>
         {{ resolveInitials() }}
@@ -72,8 +73,8 @@
     <span class="eyebrow">Resultado</span>
     <h3>Sin ciudadano identificado</h3>
     <p>
-      Busca al ciudadano en la base local. Si no existe, el sistema continuara
-      con PIDE y luego habilitara el registro manual si hace falta.
+      Busca al ciudadano en la base local. Si no existe, el sistema consultara
+      PIDE solo para DNI valido y habilitara registro manual cuando corresponda.
     </p>
   </article>
 </ng-template>

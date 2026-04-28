@@ -14,6 +14,10 @@ import { Asesor } from '../../../core/models/asesor.model';
 import { SKIP_GLOBAL_ERROR } from '../../../core/models/http-context-tokens.model';
 import { ApiBaseService } from '../../../core/services/api-base.service';
 import { SessionContextService } from '../../../core/services/session-context.service';
+import {
+  TAB_LOCK_BLOCKED_MESSAGE,
+  TabLockService
+} from '../../../core/services/tab-lock.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,10 +28,15 @@ export class AuthSessionService {
   public constructor(
     private readonly http: HttpClient,
     private readonly apiBaseService: ApiBaseService,
-    private readonly sessionContextService: SessionContextService
+    private readonly sessionContextService: SessionContextService,
+    private readonly tabLockService: TabLockService
   ) {}
 
   public ensureSession(force = false): Observable<Asesor> {
+    if (this.tabLockService.isBlocked) {
+      return throwError(() => new Error(TAB_LOCK_BLOCKED_MESSAGE));
+    }
+
     const session = this.sessionContextService.snapshot;
 
     if (!force && session.status === 'authenticated' && session.asesor) {
@@ -53,6 +62,10 @@ export class AuthSessionService {
       }),
       catchError((error: unknown) => {
         console.error('[SSO] Error al consultar /me', error);
+
+        if (this.shouldSkipSessionStateError(error)) {
+          return throwError(() => error);
+        }
 
         if (
           error instanceof HttpErrorResponse &&
@@ -86,6 +99,10 @@ export class AuthSessionService {
     token?: string | null;
     rt?: string | null;
   }): Observable<Asesor> {
+    if (this.tabLockService.isBlocked) {
+      return throwError(() => new Error(TAB_LOCK_BLOCKED_MESSAGE));
+    }
+
     const requestPayload = payload.token
       ? { token: payload.token }
       : payload.rt
@@ -105,6 +122,7 @@ export class AuthSessionService {
 
     const silentContext = new HttpContext().set(SKIP_GLOBAL_ERROR, true);
     const callbackEndpoint = this.apiBaseService.buildUrl('auth/sso/callback');
+    const meEndpoint = this.apiBaseService.buildUrl('me');
 
     this.sessionContextService.setLoading(
       'Resolviendo acceso SSO con el backend Laravel...'
@@ -138,10 +156,16 @@ export class AuthSessionService {
         }),
         catchError((error: unknown) => {
           console.error('[SSO] Error detallado en callback SSO', error);
+
+          if (this.shouldSkipSessionStateError(error)) {
+            return throwError(() => error);
+          }
+
           this.sessionContextService.setError(
-            this.resolveErrorMessage(
+            this.resolveSsoCallbackErrorMessage(
               error,
-              'No fue posible resolver el acceso SSO con el backend.'
+              callbackEndpoint,
+              meEndpoint
             )
           );
           return throwError(() => error);
@@ -164,12 +188,20 @@ export class AuthSessionService {
   }
 
   public refreshProfile(): Observable<Asesor> {
+    if (this.tabLockService.isBlocked) {
+      return throwError(() => new Error(TAB_LOCK_BLOCKED_MESSAGE));
+    }
+
     return this.getProfileRequest().pipe(
       tap((asesor) => this.sessionContextService.setAuthenticated(asesor))
     );
   }
 
   public logout(): Observable<void> {
+    if (this.tabLockService.isBlocked) {
+      return throwError(() => new Error(TAB_LOCK_BLOCKED_MESSAGE));
+    }
+
     const silentContext = new HttpContext().set(SKIP_GLOBAL_ERROR, true);
 
     return this.http
@@ -432,10 +464,101 @@ export class AuthSessionService {
     }
 
     const backendMessage =
-      (error.error as { message?: string } | null)?.message ?? error.message;
+      this.resolveHttpErrorPayloadMessage(error.error) ?? error.message;
 
     return backendMessage
       ? `${fallback} Detalle backend: ${backendMessage}`
       : `${fallback} HTTP ${error.status}.`;
+  }
+
+  private resolveSsoCallbackErrorMessage(
+    error: unknown,
+    callbackEndpoint: string,
+    meEndpoint: string
+  ): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return [
+        'No fue posible resolver el acceso SSO con el backend.',
+        'status=unknown.',
+        `url_backend=${callbackEndpoint}.`,
+        `message=${String(error)}.`,
+        `callback_endpoint=${callbackEndpoint}.`,
+        `me_endpoint=${meEndpoint}.`
+      ].join(' ');
+    }
+
+    const status = Number.isFinite(error.status) ? error.status : 0;
+    const backendUrl = error.url || callbackEndpoint;
+    const backendMessage =
+      this.resolveHttpErrorPayloadMessage(error.error) ||
+      error.message ||
+      'Sin mensaje de backend.';
+
+    return [
+      'No fue posible resolver el acceso SSO con el backend.',
+      `status=${status}.`,
+      `url_backend=${backendUrl}.`,
+      `message=${backendMessage}.`,
+      `callback_endpoint=${callbackEndpoint}.`,
+      `me_endpoint=${meEndpoint}.`
+    ].join(' ');
+  }
+
+  private resolveHttpErrorPayloadMessage(errorPayload: unknown): string | null {
+    if (!errorPayload) {
+      return null;
+    }
+
+    if (typeof errorPayload === 'string') {
+      const trimmedPayload = errorPayload.trim();
+      return trimmedPayload || null;
+    }
+
+    if (typeof errorPayload === 'object') {
+      const messageCandidate = (errorPayload as { message?: unknown }).message;
+
+      if (typeof messageCandidate === 'string') {
+        const trimmedMessage = messageCandidate.trim();
+
+        if (trimmedMessage) {
+          return trimmedMessage;
+        }
+      }
+
+      try {
+        return JSON.stringify(errorPayload);
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  private shouldSkipSessionStateError(error: unknown): boolean {
+    return this.tabLockService.isBlocked || this.isSessionAlreadyActiveError(error);
+  }
+
+  private isSessionAlreadyActiveError(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse) || error.status !== 409) {
+      return false;
+    }
+
+    return this.resolveMetaReason(error.error) === 'SESSION_ALREADY_ACTIVE';
+  }
+
+  private resolveMetaReason(errorPayload: unknown): string | null {
+    if (!errorPayload || typeof errorPayload !== 'object') {
+      return null;
+    }
+
+    const meta = (errorPayload as { meta?: unknown }).meta;
+
+    if (!meta || typeof meta !== 'object') {
+      return null;
+    }
+
+    const reason = (meta as { reason?: unknown }).reason;
+    return typeof reason === 'string' ? reason : null;
   }
 }

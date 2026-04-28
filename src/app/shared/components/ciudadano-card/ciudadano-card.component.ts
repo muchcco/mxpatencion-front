@@ -3,7 +3,9 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output
+  OnChanges,
+  Output,
+  SimpleChanges
 } from '@angular/core';
 
 export interface CiudadanoCardView {
@@ -25,7 +27,7 @@ export interface CiudadanoCardView {
   styleUrls: ['./ciudadano-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CiudadanoCardComponent {
+export class CiudadanoCardComponent implements OnChanges {
   @Input() public ciudadano: CiudadanoCardView | null = null;
   @Input() public showActions = false;
   @Input() public primaryLabel = 'Iniciar atencion';
@@ -36,6 +38,7 @@ export class CiudadanoCardComponent {
 
   @Output() public primaryAction = new EventEmitter<void>();
   @Output() public secondaryAction = new EventEmitter<void>();
+  public fotoLoadFailed = false;
 
   public resolveFuenteTone():
     | 'default'
@@ -106,5 +109,24 @@ export class CiudadanoCardComponent {
     }
 
     return 'Ciudadano identificado';
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['ciudadano']) {
+      this.fotoLoadFailed = false;
+    }
+  }
+
+  public resolveFotoSrc(): string | null {
+    if (this.fotoLoadFailed) {
+      return null;
+    }
+
+    const rawUrl = this.ciudadano?.fotoUrl?.trim();
+    return rawUrl || null;
+  }
+
+  public onFotoError(): void {
+    this.fotoLoadFailed = true;
   }
 }

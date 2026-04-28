@@ -3,7 +3,9 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output
+  OnChanges,
+  Output,
+  SimpleChanges
 } from '@angular/core';
 
 export interface EntidadCardView {
@@ -21,11 +23,12 @@ export interface EntidadCardView {
   styleUrls: ['./entidad-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EntidadCardComponent {
+export class EntidadCardComponent implements OnChanges {
   @Input() public entidad: EntidadCardView | null = null;
   @Input() public actionLabel = 'Seleccionar entidad';
 
   @Output() public selected = new EventEmitter<void>();
+  public logoLoadFailed = false;
 
   public resolveInitials(nombre?: string | null): string {
     if (!nombre) {
@@ -38,5 +41,24 @@ export class EntidadCardComponent {
       .slice(0, 2)
       .map((segment) => segment.charAt(0).toUpperCase())
       .join('');
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['entidad']) {
+      this.logoLoadFailed = false;
+    }
+  }
+
+  public resolveLogoSrc(): string | null {
+    if (this.logoLoadFailed) {
+      return null;
+    }
+
+    const rawUrl = this.entidad?.logoUrl?.trim();
+    return rawUrl || null;
+  }
+
+  public onLogoError(): void {
+    this.logoLoadFailed = true;
   }
 }

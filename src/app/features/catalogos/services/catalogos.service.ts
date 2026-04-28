@@ -116,11 +116,12 @@ export class CatalogosService {
         rawEntidad.descripcion?.trim() ||
         rawEntidad.descripcion_entidad?.trim() ||
         null,
-      logoUrl:
-        rawEntidad.logoUrl?.trim() ||
-        rawEntidad.logo_url?.trim() ||
-        rawEntidad.logo?.trim() ||
-        null
+      logoUrl: this.normalizeImageUrl(
+        rawEntidad.logoUrl ||
+          rawEntidad.logo_url ||
+          rawEntidad.logo ||
+          null
+      )
     };
   }
 
@@ -160,13 +161,28 @@ export class CatalogosService {
         null,
       urlRetorno:
         rawServicio.urlRetorno?.trim() || rawServicio.url_retorno?.trim() || null,
-      logoUrl:
-        rawServicio.logoUrl?.trim() ||
-        rawServicio.logo_url?.trim() ||
-        rawServicio.logo?.trim() ||
-        rawServicio.icono_url?.trim() ||
-        rawServicio.icono?.trim() ||
-        null
+      logoUrl: this.normalizeImageUrl(
+        rawServicio.logoUrl ||
+          rawServicio.logo_url ||
+          rawServicio.logo ||
+          rawServicio.icono_url ||
+          rawServicio.icono ||
+          null
+      )
     };
+  }
+
+  private normalizeImageUrl(value: string | null | undefined): string | null {
+    const normalizedValue = value?.trim();
+
+    if (!normalizedValue) {
+      return null;
+    }
+
+    if (/^https?:\/\//i.test(normalizedValue)) {
+      return normalizedValue;
+    }
+
+    return normalizedValue;
   }
 }

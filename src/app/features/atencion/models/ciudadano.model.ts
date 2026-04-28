@@ -13,6 +13,8 @@ export interface Ciudadano {
   direccion?: string | null;
   fotoUrl?: string | null;
   fuente?: CiudadanoFuente;
+  fuenteOrigenInicial?: CiudadanoFuente | null;
+  fuenteUltimaActualizacion?: CiudadanoFuente | null;
 }
 
 export interface BuscarCiudadanoPayload {
@@ -32,6 +34,7 @@ export interface RegistrarCiudadanoManualPayload {
 
 export type CiudadanoLookupNextAction =
   | 'CONSULT_PIDE'
+  | 'CONSULT_PIDE_REFRESH_PHOTO'
   | 'ENABLE_MANUAL'
   | string
   | null;
@@ -40,4 +43,5 @@ export interface CiudadanoLookupResult {
   ciudadano: Ciudadano | null;
   message: string;
   nextAction: CiudadanoLookupNextAction;
+  canRefreshFromPide: boolean;
 }

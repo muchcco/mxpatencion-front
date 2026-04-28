@@ -1,0 +1,33 @@
+<div class="page session-blocked" *ngIf="state$ | async as state">
+  <section class="surface-card surface-card--accent session-blocked__panel">
+    <span class="eyebrow">Sesion bloqueada</span>
+    <h1 class="page__title">Aplicacion en uso</h1>
+    <p class="page__subtitle">{{ message }}</p>
+  </section>
+
+  <section class="surface-card session-blocked__content">
+    <app-empty-state
+      title="No se puede continuar en esta pestaña"
+      [description]="resolveDetail(state)"
+    ></app-empty-state>
+
+    <div class="session-blocked__actions">
+      <button
+        *ngIf="!isBackendBlocked(state)"
+        type="button"
+        class="button"
+        (click)="retry()"
+      >
+        Reintentar
+      </button>
+      <button
+        *ngIf="isBackendBlocked(state)"
+        type="button"
+        class="button"
+        (click)="goToLogin()"
+      >
+        Ir al login
+      </button>
+    </div>
+  </section>
+</div>
